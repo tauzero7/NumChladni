@@ -1,0 +1,111 @@
+
+uniform mat4  view_matrix;
+uniform mat4  proj_matrix;
+uniform vec3  camPos;
+
+uniform sampler2D tex;
+uniform int       numNodesPerTriangle;
+uniform int   currEV;
+uniform float cosWT;
+uniform float scaleFactor;
+
+layout(triangles, equal_spacing, cw) in;
+
+in  vec2 vPositionTC[];
+in  int  vIdxTC[];
+out vec4 vPosition;
+
+out vec3  bc;
+out vec3  norm;
+out float hValue;
+out float dotProd;
+
+float getElemVal( int n, int idx ) {
+    if (idx<-1) {
+        return 0;
+    }
+    return texelFetch(tex,ivec2(idx,n),0).r;
+}
+
+void main() {
+    vec3 pos;
+    vec3 v1,v2,v3,v4,v5,v6;
+    vec3 n1,n2,n3,n4,n5,n6;
+    float h1,h2,h3,h4,h5,h6;
+
+    if (numNodesPerTriangle<=3) {
+        h1 = getElemVal(currEV,vIdxTC[0]);
+        h2 = getElemVal(currEV,vIdxTC[1]);
+        h3 = getElemVal(currEV,vIdxTC[2]);
+        v1 = vec3(vPositionTC[0],h1*cosWT*scaleFactor);
+        v2 = vec3(vPositionTC[1],h2*cosWT*scaleFactor);
+        v3 = vec3(vPositionTC[2],h3*cosWT*scaleFactor);
+        n1 = normalize(cross(v2-v1,v3-v1));
+        n2 = normalize(cross(v3-v2,v1-v2));
+        n3 = normalize(cross(v1-v3,v2-v3));
+
+        vec2 va = gl_TessCoord.x * v1.xy;
+        vec2 vb = gl_TessCoord.y * v2.xy;
+        vec2 vc = gl_TessCoord.z * v3.xy;
+        float ha = gl_TessCoord.x * h1;
+        float hb = gl_TessCoord.y * h2;
+        float hc = gl_TessCoord.z * h3;
+        hValue = ha+hb+hc;
+        pos = vec3(va+vb+vc,hValue*cosWT*scaleFactor);
+        norm = gl_TessCoord.x*n1 + gl_TessCoord.y*n2 + gl_TessCoord.z*n3;
+        dotProd = dot(normalize(camPos.xyz-pos),norm);
+    }
+    else {
+        h1 = getElemVal(currEV,vIdxTC[0]);
+        h2 = getElemVal(currEV,vIdxTC[1]);
+        h3 = getElemVal(currEV,vIdxTC[2]);
+        h4 = getElemVal(currEV,vIdxTC[3]);
+        h5 = getElemVal(currEV,vIdxTC[4]);
+        h6 = getElemVal(currEV,vIdxTC[5]);
+        v1 = vec3(vPositionTC[0],h1*cosWT*scaleFactor);
+        v2 = vec3(vPositionTC[1],h2*cosWT*scaleFactor);
+        v3 = vec3(vPositionTC[2],h3*cosWT*scaleFactor);
+        v4 = vec3(vPositionTC[3],h4*cosWT*scaleFactor);
+        v5 = vec3(vPositionTC[4],h5*cosWT*scaleFactor);
+        v6 = vec3(vPositionTC[5],h6*cosWT*scaleFactor);
+        n1 = normalize(cross(v4-v1,v6-v1));
+        n2 = normalize(cross(v5-v2,v4-v2));
+        n3 = normalize(cross(v6-v3,v5-v3));
+
+        vec3 zeta = gl_TessCoord;
+        vec3 sv = zeta*(2.0*zeta-1.0);
+        vec3 sa = 4.0*zeta.xyx*zeta.yzz;
+        vec2 va = sv.x * v1.xy;
+        vec2 vb = sv.y * v2.xy;
+        vec2 vc = sv.z * v3.xy;
+        vec2 vd = sa.x * v4.xy;
+        vec2 ve = sa.y * v5.xy;
+        vec2 vf = sa.z * v6.xy;
+        float ha = sv.x * h1;
+        float hb = sv.y * h2;
+        float hc = sv.z * h3;
+        float hd = sa.x * h4;
+        float he = sa.y * h5;
+        float hf = sa.z * h6;
+
+        #if 1
+            n4 = 0.5*(n1+n2);
+            n5 = 0.5*(n2+n3);
+            n6 = 0.5*(n3+n1);
+        #else
+            n4 = mix(n1,n2,sv.z);
+            n5 = mix(n2,n3,sv.x);
+            n6 = mix(n3,n1,sv.y);
+        #endif
+
+        hValue = ha+hb+hc+hd+he+hf;
+        pos = vec3(va+vb+vc+vd+ve+vf,hValue*cosWT*scaleFactor);
+        norm = sv.x*n1 + sv.y*n2 + sv.z*n3 + sa.x*n4 + sa.y*n5 + sa.z*n6;
+        dotProd = dot(normalize(camPos.xyz-pos),norm);
+    }
+
+    vPosition = proj_matrix * view_matrix * vec4(pos,1);
+
+    gl_Position = vPosition;
+    bc = gl_TessCoord;
+}

@@ -1,0 +1,47 @@
+# see http://qt-project.org/doc/qt-4.8/stylesheet-syntax.html
+
+#QLabel { font-family: monospace;}
+
+QLineEdit { background-color: white;
+            height: 16px;
+            font-family: monospace;
+            font-size: 12px
+} 
+
+QTextEdit { background-color: #ffffff;
+            font-family: Courier;
+            font-size: 12px
+}
+
+QPushButton { height: 14px;
+#              font-family: monospace;
+}
+
+#QPushButton:hover:!pressed { background-color: #ff0000; }
+
+QComboBox { height: 16px;
+            font-family: monospace;
+}
+
+QSpinBox { background: transparent;
+           height: 24px;
+           font-family: monospace;
+}
+
+QDoubleSpinBox { background-color: #ff0000;
+                 height: 24px
+}
+
+QDockWidget::title { background-color: #d4cbc3;
+#QDockWidget::title { background-color: #e5dcd4;
+#QDockWidget::title { background-color: #ffdcd4;
+                     border-style: outset;
+                     border-width: 1px;
+                     border-color: #ffffff;
+}
+
+DoubleEdit { background-color: #ffffdd;
+             height: 16px
+}
+
+QStatusBar { background-color: #d4cbc3; }

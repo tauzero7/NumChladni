@@ -1,0 +1,6 @@
+
+*.stash
+Makefile
+NumChladni32
+qrc_*
+releaseLAPACK

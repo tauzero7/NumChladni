@@ -1,0 +1,23 @@
+
+uniform int tessLevelInner;
+uniform int tessLevelOuter;
+
+layout(vertices = 3) out;
+
+in  vec2 vPosition[];
+in  int  vIdx[];
+out vec2 vPositionTC[];
+out int  vIdxTC[];
+
+#define ID  gl_InvocationID
+
+
+void main() {
+    vPositionTC[ID] = vPosition[ID];
+    vIdxTC[ID] = vIdx[ID];
+
+    gl_TessLevelInner[0] = tessLevelInner;
+    gl_TessLevelOuter[0] = tessLevelOuter;
+    gl_TessLevelOuter[1] = tessLevelOuter;
+    gl_TessLevelOuter[2] = tessLevelOuter;
+}
